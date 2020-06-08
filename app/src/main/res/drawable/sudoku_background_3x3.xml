@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:height="80dp"
+    android:width="80dp"
+    android:viewportHeight="12"
+    android:viewportWidth="12" >
+    <path
+        android:name="grid3x3"
+        android:strokeColor="@android:color/black"
+        android:fillColor= "@color/sudoku_background"
+        android:strokeAlpha=".6"
+        android:strokeWidth=".1"
+        android:pathData="L 12,0 L 12,12 L 0,12 L 0,0 M 4,0 L 4,12
+                        M 8,0 L 8,12 M 0,4 L 12,4 M 0,8 L 12,8"/>
+</vector>

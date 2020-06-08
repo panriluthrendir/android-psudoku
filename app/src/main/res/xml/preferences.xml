@@ -1,0 +1,19 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ListPreference
+        app:key="difficulty"
+        app:title="Difficulty"
+        app:defaultValue="Easy"
+        app:entries="@array/difficulty"
+        app:entryValues="@array/difficulty"
+        app:useSimpleSummaryProvider="true" />
+
+    <ListPreference
+        app:key="size"
+        app:title="Size"
+        app:defaultValue="3x3"
+        app:entries="@array/size"
+        app:entryValues="@array/size"
+        app:useSimpleSummaryProvider="true" />
+
+</PreferenceScreen>

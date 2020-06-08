@@ -1,0 +1,12 @@
+<resources>
+    <string-array name="difficulty">
+        <item>Easy</item>
+        <item>Medium</item>
+        <item>Hard</item>
+    </string-array>
+
+    <string-array name="size">
+        <item>3x3</item>
+    </string-array>
+
+</resources>
