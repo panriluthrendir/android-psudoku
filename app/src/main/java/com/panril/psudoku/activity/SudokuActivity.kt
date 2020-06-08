@@ -16,6 +16,7 @@ import com.panril.psudoku.db.AppDatabase
 import com.panril.psudoku.db.SolvedPuzzle
 import com.panril.psudoku.util.chronoTime
 import com.panril.psudoku.util.generatePuzzleFromPreferences
+import com.panril.psudoku.util.puzzleFromString
 import com.panril.psudoku.util.puzzleToString
 import sudoku.core.Sudoku
 import sudoku.puzzle.Puzzle
@@ -24,6 +25,7 @@ import sudoku.solver.LinearSolver
 
 class SudokuActivity : AppCompatActivity() {
 
+    private lateinit var puzzle: Puzzle
     private lateinit var sudokuView: SudokuView
     private lateinit var keyboardView: KeyboardView
     private lateinit var chrono: Chronometer
@@ -37,6 +39,11 @@ class SudokuActivity : AppCompatActivity() {
         sudokuView = findViewById(R.id.sudoku_view)
         keyboardView = findViewById(R.id.keyboard_view)
         chrono = findViewById(R.id.chronometer)
+        if (intent.hasExtra("puzzle_state")) {
+            puzzle = puzzleFromString(intent.getStringExtra("puzzle_state"))
+        } else {
+            puzzle = generatePuzzleFromPreferences(this)
+        }
         newPuzzle()
     }
 
@@ -65,7 +72,6 @@ class SudokuActivity : AppCompatActivity() {
     }
 
     private fun newPuzzle() {
-        val puzzle = generatePuzzleFromPreferences(this)
         sudokuView.newPuzzle(puzzle)
         keyboardView.size = puzzle.height * puzzle.width
         chrono.base = SystemClock.elapsedRealtime()
@@ -102,10 +108,18 @@ class SudokuActivity : AppCompatActivity() {
             val puzzle = params[0]
             val db = Room.databaseBuilder(
                 activity.applicationContext,
-                AppDatabase::class.java, "puzzles"
-            ).build()
-            if (puzzle != null) {
-                db.puzzleDao().insert(puzzle)
+                AppDatabase::class.java, "puzzles")
+                .build()
+            val dao = db.puzzleDao()
+            val solvedPuzzle = dao.getPuzzleByState(puzzle!!.state)
+            if (solvedPuzzle == null) {
+                dao.insert(puzzle)
+            } else {
+                val bestTime = solvedPuzzle.time
+                val newTime = puzzle.time
+                if (newTime < bestTime) {
+                    dao.update(solvedPuzzle.uid, newTime)
+                }
             }
             return null
         }

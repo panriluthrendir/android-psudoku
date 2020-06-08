@@ -19,6 +19,12 @@ interface PuzzleDao {
     @Insert
     fun insert(puzzle: SolvedPuzzle)
 
+    @Query("UPDATE puzzles SET time=:time WHERE uid=:uid")
+    fun update(uid: Int, time: Long)
+
+    @Query("SELECT * FROM puzzles WHERE state=:state")
+    fun getPuzzleByState(state: String): SolvedPuzzle?
+
     @Query("SELECT * FROM puzzles")
     fun getAllSolved(): List<SolvedPuzzle>
 }
