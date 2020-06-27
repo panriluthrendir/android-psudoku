@@ -41,9 +41,7 @@ class PuzzleAdapter(val puzzles: List<SolvedPuzzle>, val context: Context) :
         holder.diffText.text = "difficulty: ${solvedPuzzle.diff}"
         holder.timeText.text = "time: ${millisToTimeStr(solvedPuzzle.time)}"
         val state = solvedPuzzle.state
-        holder.button.setOnClickListener({
-            openOnActivity(state)
-        })
+        holder.button.setOnClickListener { openOnActivity(state) }
     }
 
     private fun openOnActivity(state: String) {

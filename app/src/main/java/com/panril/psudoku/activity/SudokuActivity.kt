@@ -14,13 +14,11 @@ import com.panril.psudoku.R
 import com.panril.psudoku.view.SudokuView
 import com.panril.psudoku.db.AppDatabase
 import com.panril.psudoku.db.SolvedPuzzle
-import com.panril.psudoku.util.chronoTime
-import com.panril.psudoku.util.generatePuzzleFromPreferences
-import com.panril.psudoku.util.puzzleFromString
-import com.panril.psudoku.util.puzzleToString
+import com.panril.psudoku.util.*
 import sudoku.core.Sudoku
 import sudoku.puzzle.Puzzle
 import sudoku.solver.LinearSolver
+import java.lang.IllegalArgumentException
 
 
 class SudokuActivity : AppCompatActivity() {
@@ -31,6 +29,17 @@ class SudokuActivity : AppCompatActivity() {
     private lateinit var chrono: Chronometer
     private var savedIndex = 0
     private var buttonSize = 0
+
+    companion object {
+
+        val SUCCESS = 0
+        val NEW_BEST_TIME = 1
+        val REMAIN_BEST_TIME = 2
+
+        val SUCCESS_STR = "Congratulations, you solved this puzzle in "
+        val NEW_BEST_TIME_STR = "Congratulations, your new best time is "
+        val REMAIN_BEST_TIME_STR = "You solved this puzzle, but your best time remains "
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +69,7 @@ class SudokuActivity : AppCompatActivity() {
             true
         }
         R.id.action_new -> {
+            puzzle = generatePuzzleFromPreferences(this)
             newPuzzle()
             true
         }
@@ -79,12 +89,10 @@ class SudokuActivity : AppCompatActivity() {
     }
 
     fun end(basePuzzle: Puzzle) {
-        Toast.makeText(this, "Congratulations, you solved this puzzle!", Toast.LENGTH_LONG)
-            .show()
         chrono.stop()
         val diff = LinearSolver().difficulty(Sudoku(basePuzzle))
         val solvedPuzzle = SolvedPuzzle(
-            time= chronoTime(chrono), diff=diff, state= puzzleToString(basePuzzle)
+            time=chronoTime(chrono), diff=diff, state=puzzleToString(basePuzzle)
         )
         SaveToDatabase(this).execute(solvedPuzzle)
     }
@@ -104,6 +112,8 @@ class SudokuActivity : AppCompatActivity() {
 
     class SaveToDatabase(val activity: SudokuActivity) : AsyncTask<SolvedPuzzle, Void, Void>() {
 
+        var message = ""
+
         override fun doInBackground(vararg params: SolvedPuzzle?): Void? {
             val puzzle = params[0]
             val db = Room.databaseBuilder(
@@ -112,16 +122,24 @@ class SudokuActivity : AppCompatActivity() {
                 .build()
             val dao = db.puzzleDao()
             val solvedPuzzle = dao.getPuzzleByState(puzzle!!.state)
+            val newTime = puzzle.time
             if (solvedPuzzle == null) {
                 dao.insert(puzzle)
+                message = SUCCESS_STR + millisToTimeStr(newTime)
             } else {
                 val bestTime = solvedPuzzle.time
-                val newTime = puzzle.time
                 if (newTime < bestTime) {
                     dao.update(solvedPuzzle.uid, newTime)
+                    message = NEW_BEST_TIME_STR + millisToTimeStr(newTime)
+                } else {
+                    message = REMAIN_BEST_TIME_STR + millisToTimeStr(bestTime)
                 }
             }
             return null
+        }
+
+        override fun onPostExecute(result: Void?) {
+            Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
         }
     }
 
